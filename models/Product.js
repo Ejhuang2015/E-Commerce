@@ -36,14 +36,20 @@ Product.init(
     },
     category_id: {
       type: DataTypes.INTEGER,
+      references: {
+        model: "category",
+        key: "id",
+        unique: false
+      }
     },
   },
   {
     sequelize,
-    timestamps: false,
+    timestamps: true,
     freezeTableName: true,
     underscored: true,
     modelName: 'product',
+    paranoid: true,
   }
 );
 
