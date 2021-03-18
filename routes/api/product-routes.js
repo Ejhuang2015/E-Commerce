@@ -68,6 +68,7 @@ router.post('/', async (req, res) => {
     const product = await Product.create(req.body);
     // if there's product tags, we need to create pairings to bulk create in the ProductTag model
     if (req.body.tagIds.length) {
+      // Parse tagIds into an array
       const idArr = JSON.parse(req.body.tagIds);
       const productTagIdArr = idArr.map((tag_id) => {
         return {
@@ -76,13 +77,14 @@ router.post('/', async (req, res) => {
         };
       });
       const productTagIds = await ProductTag.bulkCreate(productTagIdArr);
-      res.status(200).json(productTagIds);
+      // Merge the product output and tag output into an array to send both information
+      const outputArr = [product, productTagIds];
+      res.status(200).json(outputArr);
     } else {
       // if no product tags, just respond
       res.status(200).json(product);
     }
   } catch (err) {
-    console.log(err);
     res.status(400).json(err);
   }
 });
@@ -92,32 +94,39 @@ router.put('/:id', async (req, res) => {
   try {
     // update product data
     const product = await Product.update(req.body, { where: { id: req.params.id } });
-    // find all associated tags from ProductTag
-    const productTags = await ProductTag.findAll({ where: { product_id: req.params.id } });
-    // get list of current tag_ids
-    const productTagIds = productTags.map(({ tag_id }) => tag_id);
-    // create filtered list of new tag_ids
-    const newProductTags = req.body.tagIds
-      .filter((tag_id) => !productTagIds.includes(tag_id))
-      .map((tag_id) => {
-        return {
-          product_id: req.params.id,
-          tag_id,
-        };
-      });
-    // figure out which ones to remove
-    const productTagsToRemove = productTags
-      .filter(({ tag_id }) => !req.body.tagIds.includes(tag_id))
-      .map(({ id }) => id);
+    if (req.body.tagIds.length) {
+      // find all associated tags from ProductTag
+      const productTags = await ProductTag.findAll({ where: { product_id: req.params.id } });
+      // get list of current tag_ids
+      const productTagIds = productTags.map(({ tag_id }) => tag_id);
+      // Parse tagIds into an array
+      const idArr = JSON.parse(req.body.tagIds);
+      // create filtered list of new tag_ids
+      const newProductTags = idArr
+        .filter((tag_id) => !productTagIds.includes(tag_id))
+        .map((tag_id) => {
+          return {
+            product_id: req.params.id,
+            tag_id,
+          };
+        });
+      // figure out which ones to remove
+      const productTagsToRemove = productTags
+        .filter(({ tag_id }) => !idArr.includes(tag_id))
+        .map(({ id }) => id);
 
-    // run both actions
-    const updatedProductTags = await Promise.all([
-      ProductTag.destroy({ where: { id: productTagsToRemove } }),
-      ProductTag.bulkCreate(newProductTags),
-    ]);
-    res.status(200).json(updatedProductTags)
+      // run both actions
+      const updatedProductTags = await Promise.all([
+        ProductTag.destroy({ where: { id: productTagsToRemove } }),
+        ProductTag.bulkCreate(newProductTags),
+      ]);
+      res.status(200).json(updatedProductTags);
+    } else {
+      // if no product tags, just respond
+      res.status(200).json(product ? "Success!" : "Failed")
+    }
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     res.status(400).json(err);
   }
 });
