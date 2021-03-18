@@ -15,7 +15,7 @@ ProductTag.init(
     product_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: "Product",
+        model: "product",
         key: "id",
         unique: false
       }
@@ -23,7 +23,7 @@ ProductTag.init(
     tag_id: {
       type: DataTypes.INTEGER,
     references: {
-      model: "Tag",
+      model: "tag",
       key: "id",
       unique: false
     }
@@ -31,10 +31,11 @@ ProductTag.init(
   },
   {
     sequelize,
-    timestamps: false,
+    timestamps: true,
     freezeTableName: true,
     underscored: true,
     modelName: 'product_tag',
+    paranoid: true,
   }
 );
 
