@@ -3,6 +3,10 @@
 
 This is a short project based off a starter template designed to practice writing back-end code. This project utilizes Node.js, MySQL, Sequalize, and Express.js to connect to create and connect to a local database. Users are able to utilize an API querying software, such as Postman, to make RESTful routes to perform CRUDdy operations upon an E-Commerce esque database.
 
+![Demo Gif](./public/assets/Demo.gif)
+
+[Link to Walkthrough Video](https://youtu.be/sxpxfl7-hIk)
+
 ## Table of Contents
 * [Installation](#installation)
 * [Contributors](#contributors)
